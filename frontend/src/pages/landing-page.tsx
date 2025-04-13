@@ -28,9 +28,6 @@ const Index = () => {
           <div className="flex items-center space-x-4">
             <Link to="/" className="text-gray-700 hover:text-blue-600">Log In</Link>
             <Button className="bg-blue-600 hover:bg-blue-700 rounded-full px-5 py-2">Sign Up</Button>
-            <button onClick={toggleDarkMode} className="text-gray-500 p-2 rounded-full">
-              {isDarkMode ? <Moon size={20} /> : <Sun size={20} />}
-            </button>
           </div>
         </div>
       </nav>
