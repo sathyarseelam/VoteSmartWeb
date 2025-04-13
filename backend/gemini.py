@@ -1,5 +1,6 @@
 # simplies legal text 
 import os
+import json
 from dotenv import load_dotenv
 import google.generativeai as genai
 
@@ -46,9 +47,37 @@ def people_affected(text: str) -> str:
     resp = model.generate_content(prompt)
     return resp.text.strip()
 
+def get_top_propositions(user_profile: dict, propositions: list) -> list:
+    """
+    Get the top 3 propositions that resonate most with the user based on their profile.
+
+    Args:
+        user_profile (dict): The user's profile data.
+        propositions (list): A list of propositions, each as a dictionary with keys like 'number' and 'details'.
+
+    Returns:
+        list: A list of the top 3 propositions with their alignment, reason, and impact.
+    """
+    results = []
+
+    for proposition in propositions:
+        # Use the personalize_proposition function to evaluate alignment
+        proposition_text = proposition.get("details", "")
+        result = personalize_proposition(user_profile, proposition_text)
+        result["proposition_number"] = proposition.get("number", "Unknown")
+        result["proposition_title"] = proposition.get("title", "Untitled")
+        results.append(result)
+
+    # Sort the results by alignment priority (Highly aligned > Moderately aligned > Not aligned)
+    alignment_priority = {"Highly aligned": 3, "Moderately aligned": 2, "Not aligned": 1}
+    results.sort(key=lambda x: alignment_priority.get(x["alignment"], 0), reverse=True)
+
+    # Return the top 3 propositions
+    return results[:3]
 
 # Personalization summary (AI-based alignment)
-def personalize_proposition(user_profile: dict, proposition_text: str) -> str:
+# Enhanced personalization function in gemini.py
+def personalize_proposition(user_profile: dict, proposition_text: str) -> dict:
     user_info_parts = []
     for key, value in user_profile.items():
         if key == "policy_preferences":
@@ -59,32 +88,37 @@ def personalize_proposition(user_profile: dict, proposition_text: str) -> str:
     user_info_str = " ; ".join(user_info_parts)
 
     prompt = (
-        "Using the user profile and proposition below, determine how well the proposition aligns with the user's interests. "
-        "Only reply with one of the following labels: 'Highly aligned', 'Moderately aligned', or 'Not aligned'. "
-        "After the label, give one short sentence (≈10 words) explaining why. Do not use any formatting or markdown.\n\n"
+        "Using the user profile and proposition below, create a personalized response with the following format:\n"
+        "1. Alignment: One of 'Highly aligned', 'Moderately aligned', or 'Not aligned'\n"
+        "2. Reason: A short sentence (≈15 words) explaining the alignment reasoning\n"
+        "3. Impact: One sentence on how this would directly impact this specific user\n"
+        "4. Format as a JSON with these fields. No markdown or additional text.\n\n"
         f"User Profile: {user_info_str}\n\n"
         f"Proposition Text: {proposition_text}"
     )
     
     resp = model.generate_content(prompt)
-    return resp.text.strip()
-
-
+    response_text = resp.text.strip()
+    
+    # Parse the JSON response (with error handling)
+    try:
+        import json
+        return json.loads(response_text)
+    except:
+        # Fallback if JSON parsing fails
+        return {
+            "alignment": "Unknown",
+            "reason": "Could not determine alignment",
+            "impact": "Impact analysis unavailable"
+        }
 
 if __name__ == "__main__":
-    sample_text = (
-        "In accordance with Section 4.2 of the Municipal Code, all residents are hereby required to comply "
-        "with newly instated waste management procedures effective June 1st, 2025. This includes the segregation "
-        "of biodegradable and non-biodegradable waste, adherence to designated disposal schedules, and the use of "
-        "city-approved recycling containers. Non-compliance may result in monetary fines or other penalties as "
-        "outlined by city ordinances."
-    )
+    # Load propositions from props.json
+    props_file_path = "/Users/avnigandhi/Documents/VoteSmartWeb/backend/props.json"
+    with open(props_file_path, "r") as file:
+        propositions = json.load(file)
 
-    print("\nSimplified Description:\n", simplify_description(sample_text))
-    print("\nSimplified Paragraph:\n", simplify_paragraph(sample_text))
-    print("\nPeople Affected:\n", people_affected(sample_text))
-    
-    # Test the personalization function with a sample user profile.
+    # Example user profile (hardcoded for now)
     sample_user_profile = {
         "first_name": "Alex",
         "last_name": "Doe",
@@ -107,4 +141,16 @@ if __name__ == "__main__":
             "Military spending": "Right"
         }
     }
-    print("\nPersonalization Result:\n", personalize_proposition(sample_user_profile, sample_text))
+
+    # Get the top 3 propositions
+    top_propositions = get_top_propositions(sample_user_profile, propositions)
+
+    # Print the results (for debugging purposes)
+    print("\nTop 3 Propositions:")
+    for prop in top_propositions:
+        print(f"Proposition {prop['proposition_number']} - {prop['proposition_title']}")
+
+    # Output the top 3 propositions for the frontend
+    output_file_path = "/Users/avnigandhi/Documents/VoteSmartWeb/backend/top_propositions.json"
+    with open(output_file_path, "w") as output_file:
+        json.dump(top_propositions, output_file, indent=4)
