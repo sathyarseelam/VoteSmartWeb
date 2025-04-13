@@ -1,6 +1,6 @@
 # VoteSmartWeb
 
-Group members: Avni Gandhi, Sathya Seelam, Amisha Kandi
+Group members: Avni Gandhi, Sathya Seelam, Amisha Kandi, Mihir Bhagatwala
 
 Submitted to CruzHacks 2025
 
