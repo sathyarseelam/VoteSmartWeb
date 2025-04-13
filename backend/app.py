@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+from fastapi import Request, HTTPException
+from fastapi.responses import JSONResponse
 
 # Import external modules (assume these are available in your project)
 from policy_scraper import fetch_main_page, extract_prop_blocks, fetch_prop_details
@@ -135,8 +137,24 @@ def logout(request: Request):
     add_flash(request, "You have been logged out.")
     return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
+@app.get("/getUserData", response_class=JSONResponse)
+def get_user_data(request: Request):
+    # Ensure the user is logged in
+    if "email" not in request.session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    email = request.session["email"]
+    # Find the user in MongoDB by email
+    user = db.users.find_one({"email": email})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Try to get the first name from the user's data, or fallback to a generic name
+    first_name = user.get("first_name", "User")
+    
+    return JSONResponse(content={"userName": first_name})
 
-# ---- Profile Update Steps ----
 
 # ---- Multi-Step Profile Update Routes ----
 
