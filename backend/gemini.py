@@ -13,49 +13,42 @@ genai.configure(api_key=api_key)
 model = genai.GenerativeModel(model_name="gemini-1.5-pro-latest")
 
 # blurb on the tab
+# Simplified description (tab blurb)
 def simplify_description(text: str) -> str:
-    """
-    Ask Gemini to rewrite `text` in clear, everyday language without legal or technical jargon.
-    """
     prompt = (
-        "Rewrite the following in two sentences in clear, everyday language without legal or technical jargon:\n\n"
+        "Rewrite the following in clear, everyday language using two short sentences. "
+        "Avoid all legal, technical, or formal language. No markdown or formatting—just plain text.\n\n"
         f"{text}"
     )
     resp = model.generate_content(prompt)
     return resp.text.strip()
 
-# pop up information
+
+# Simplified paragraph (popup info)
 def simplify_paragraph(text: str) -> str:
-    """
-    Ask Gemini to rewrite `text` in clear, everyday language without legal or technical jargon.
-    """
     prompt = (
-        "Rewrite the following in 3-4 in clear, everyday language without legal or technical jargon:\n\n"
+        "Rewrite the following in 3–4 plain sentences using everyday language. "
+        "Avoid legal or technical jargon. Do not include any formatting or markdown.\n\n"
         f"{text}"
     )
     resp = model.generate_content(prompt)
     return resp.text.strip()
 
-# pop up information
+
+# People affected (popup info)
 def people_affected(text: str) -> str:
-    """
-    Use Gemini to analyze who would be positively or negatively affected by the proposition.
-    """
     prompt = (
-        "Who would benefit and who might be hurt by this proposition? "
-        "Keep it short and simple. Use two short bullet lists: 'Positively Affected' and 'Negatively Affected'.\n\n"
+        "In plain text, list who would benefit and who might be hurt by this proposition. "
+        "Use two short bullet lists, titled 'Positively Affected' and 'Negatively Affected'. "
+        "Use hyphens (-) for bullets. Do not use any markdown or formatting.\n\n"
         f"{text}"
     )
-
     resp = model.generate_content(prompt)
     return resp.text.strip()
 
+
+# Personalization summary (AI-based alignment)
 def personalize_proposition(user_profile: dict, proposition_text: str) -> str:
-    """
-    Use Gemini to analyze how well a proposition aligns with the user's interests.
-    Respond with one of: 'Highly aligned', 'Moderately aligned', or 'Not aligned', followed by a brief (≈10-word) rationale.
-    """
-    # Create a simple string representation for the user profile.
     user_info_parts = []
     for key, value in user_profile.items():
         if key == "policy_preferences":
@@ -64,12 +57,13 @@ def personalize_proposition(user_profile: dict, proposition_text: str) -> str:
         else:
             user_info_parts.append(f"{key}: {value}")
     user_info_str = " ; ".join(user_info_parts)
-    
+
     prompt = (
-        "Based on the user profile and the proposition text below, decide how well the proposition aligns with the user's interests. "
-        "Answer with one of these labels: 'Highly aligned', 'Moderately aligned', or 'Not aligned', followed by a brief 10-word reason.\n\n"
-        f"User Profile: {user_info_str}\n"
-        f"Proposition Text: {proposition_text}\n"
+        "Using the user profile and proposition below, determine how well the proposition aligns with the user's interests. "
+        "Only reply with one of the following labels: 'Highly aligned', 'Moderately aligned', or 'Not aligned'. "
+        "After the label, give one short sentence (≈10 words) explaining why. Do not use any formatting or markdown.\n\n"
+        f"User Profile: {user_info_str}\n\n"
+        f"Proposition Text: {proposition_text}"
     )
     
     resp = model.generate_content(prompt)
