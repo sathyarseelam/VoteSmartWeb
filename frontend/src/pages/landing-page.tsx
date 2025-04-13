@@ -39,10 +39,10 @@ const Index = () => {
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 items-center">
           <div>
-            <h1 className="text-5xl font-bold mb-6">
+          <h1 className="text-5xl font-bold mb-6">
               <span className="text-blue-500">Welcome to </span>
-              <span className="text-purple-500">VoteSmart</span>
-            </h1>
+              <span className="text-purple-400">VoteSmart</span>
+          </h1>
             <p className="text-gray-600 text-xl mb-8">
               Make voting easier. Get personalized updates, track legislation, and compare candidates — all in one place.
             </p>
@@ -59,9 +59,9 @@ const Index = () => {
           </div>
           <div className="flex justify-center">
             <img 
-              src="/lovable-uploads/033f8c18-16a0-457d-a97a-4ba2c32c4d12.png" 
+              src="public/images/voteballot.png" 
               alt="Voting ballot illustration" 
-              className="max-w-full h-auto"
+              className="w-3/4 h-auto"
             />
           </div>
         </div>
@@ -88,7 +88,7 @@ const Index = () => {
             </p>
             <div className="mt-4">
               <img 
-                src="/lovable-uploads/d09a2161-f037-4025-9192-553464432601.png" 
+                src="public/images/policyupdates.png" 
                 alt="Policy updates illustration" 
                 className="w-full h-auto"
               />
@@ -102,11 +102,11 @@ const Index = () => {
             </div>
             <h3 className="text-xl font-bold mb-2">Compare Candidates</h3>
             <p className="text-gray-600 mb-6">
-              Side-by-side comparisons of candidates' positions, voting records, and backgrounds.
+              Side-by-side comparisons of candidates' policies, voting records, and backgrounds.
             </p>
             <div className="mt-4">
               <img 
-                src="/lovable-uploads/cad9eb8d-4ccd-4937-88f8-6028e14739ad.png" 
+                src="public/images/comparecandidates.png" 
                 alt="Compare candidates illustration" 
                 className="w-full h-auto"
               />
@@ -124,7 +124,7 @@ const Index = () => {
             </p>
             <div className="mt-4">
               <img 
-                src="/lovable-uploads/8c03b22e-8d38-4db6-bb35-be17a2e9e454.png" 
+                src="public/images/pollinglocations.png" 
                 alt="Polling locations map" 
                 className="w-full h-auto"
               />
