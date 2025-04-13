@@ -38,7 +38,7 @@ const Index = () => {
           <div>
           <h1 className="text-5xl font-bold mb-6">
               <span className="text-blue-500">Welcome to </span>
-              <span className="text-purple-400">VoteSmart</span>
+              <span className="text-red-500">VoteSmart</span>
           </h1>
             <p className="text-gray-600 text-xl mb-8">
               Make voting easier. Get personalized updates, track legislation, and compare candidates — all in one place.
