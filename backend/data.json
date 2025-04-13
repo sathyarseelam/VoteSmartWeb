@@ -1,0 +1,58 @@
+{
+    "step1": {
+      "url": "/profile/step1",
+      "method": "GET (form) / POST (expects 'first_name')",
+      "description": "Enter your first name."
+    },
+    "step2": {
+      "url": "/profile/step2",
+      "method": "GET (form) / POST (expects 'last_name')",
+      "description": "Enter your last name."
+    },
+    "step3": {
+      "url": "/profile/step3",
+      "method": "GET (form) / POST (expects 'birth_date' in YYYY-MM-DD format)",
+      "description": "Enter your birth date."
+    },
+    "step4": {
+      "url": "/profile/step4",
+      "method": "GET (form) / POST (expects 'gender')",
+      "description": "Choose your gender."
+    },
+    "step5": {
+      "url": "/profile/step5",
+      "method": "GET (form) / POST (expects 'county')",
+      "description": "Enter your county."
+    },
+    "step6": {
+      "url": "/profile/step6",
+      "method": "GET (form) / POST (expects 'income_bracket')",
+      "description": "Choose your income bracket."
+    },
+    "step7": {
+      "url": "/profile/step7",
+      "method": "GET (form) / POST (expects 'education_level')",
+      "description": "Enter your education level."
+    },
+    "step8": {
+      "url": "/profile/step8",
+      "method": "GET (form) / POST (expects 'occupation')",
+      "description": "Enter your occupation."
+    },
+    "step9": {
+      "url": "/profile/step9",
+      "method": "GET (form) / POST (expects 'family_size')",
+      "description": "Choose your family size."
+    },
+    "step10": {
+      "url": "/profile/step10",
+      "method": "GET (form) / POST (expects 'race_ethnicity')",
+      "description": "Choose your race/ethnicity."
+    },
+    "step11": {
+      "url": "/profile/step11",
+      "method": "GET (form) / POST (expects 'policy_preferences' with one of: 'Right Leaning', 'Middle', 'Left Leaning')",
+      "description": "Select your policy preferences."
+    }
+  }
+  
