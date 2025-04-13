@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { 
   Home, 
@@ -20,7 +20,26 @@ import { Card, CardContent } from "@/components/ui/card";
 
 const Dashboard = () => {
   const [feedFilter, setFeedFilter] = useState("All");
-  const userName = "Alex";
+  const [userName, setUserName] = useState("...");
+
+/*
+  useEffect(()=>{
+    const fetchData = async () => {
+      try {
+        const res = await fetch('http://localhost:8080/getUserData');
+        if(!res.ok) {
+          //error
+        }
+        const json = await res.json();
+        setUserName(json.userName)
+      }
+      catch (error){
+
+      }
+    }
+    fetchData();
+  }, [])
+  */
   
   return (
     <div className="min-h-screen bg-white">
