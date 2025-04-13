@@ -5,8 +5,9 @@ requests               # HTTP client
 pymongo                # MongoDB driver
 dnspython              # for mongodb+srv URIs
 python-dotenv          # load .env
-google-generativeai  # Gemini (Vertex AI) client
+google-generativeai    # Gemini (Vertex AI) client
 tiktoken               # tokenizer for chunking
 pydantic               # settings & data validation
 Flask                  # to make app
 Werkzeug               # to hash user passwords
+python-multipart
