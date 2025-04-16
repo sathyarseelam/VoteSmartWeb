@@ -5,17 +5,12 @@ from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
+from enum import Enum
+from datetime import date
 from typing import List, Dict, Optional
-
-# Import external modules (assume these are available in your project)
 from policy_scraper import fetch_main_page, extract_prop_blocks, fetch_prop_details
-from gemini import (
-    simplify_description,
-    simplify_paragraph,
-    people_affected,
-    personalize_proposition,
-)
+from gemini import simplify_description, simplify_paragraph, people_affected, personalize_proposition
 
 app = FastAPI()
 
@@ -32,38 +27,51 @@ app.add_middleware(
 # Add session middleware (just like Flask's session)
 app.add_middleware(SessionMiddleware, secret_key="secretkey")
 
-# Set up Jinja2 templates (ensure your HTML files are in the "templates" directory)
-templates = Jinja2Templates(directory="templates")
-
 # Setup MongoDB connection using PyMongo
-client = MongoClient("mongodb+srv://mbhagatw:878298347235@cluster0.rjnq2ff.mongodb.net/loginapp?retryWrites=true&w=majority&appName=Cluster0")
-db = client.get_database("loginapp")
+client = MongoClient("mongodb+srv://mbhagatw:878298347235@cluster0.rjnq2ff.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
+db = client.get_database("voteSmart")  # Use your database name here
+collection_name = db["users"]
+
+# ---------------------------
+
+class PolicyChoice(str, Enum):
+    left = "Left"
+    neutral = "Neutral"
+    right = "Right"
+
+class PolicyPreferences(BaseModel):
+    civil_rights: PolicyChoice
+    climate: PolicyChoice
+    criminal_justice: PolicyChoice
+    education: PolicyChoice
+    economy: PolicyChoice
+    healthcare: PolicyChoice
+    housing: PolicyChoice
+    immigration_global_affairs: PolicyChoice
+    infrastructure: PolicyChoice
+    tech_innovation: PolicyChoice
+
+class UserProfile(BaseModel):
+    # required
+    first_name: str
+    last_name: str
+    date_of_birth: date
+    email: EmailStr
+
+    # everything from here is optional
+    gender: Optional[str] = None
+    county: Optional[str] = None
+    income_bracket: Optional[str] = None
+    education_level: Optional[str] = None
+    occupation: Optional[str] = None
+    family_size: Optional[int] = None
+    race_ethnicity: Optional[str] = None
+
+    # now your exact policy list, optional
+    policy_preferences: Optional[PolicyPreferences] = None
 
 # In-memory propositions cache (for scraped propositions)
 propositions_cache: List[Dict] = []
-
-
-# ----------- Helper Functions -----------
-
-def add_flash(request: Request, message: str):
-    """Imitate Flask flash messaging by storing messages in the session."""
-    flashes = request.session.get("flash", [])
-    flashes.append(message)
-    request.session["flash"] = flashes
-
-
-def get_flash(request: Request):
-    """Retrieve and clear flash messages."""
-    flashes = request.session.get("flash", [])
-    request.session["flash"] = []
-    return flashes
-
-
-def init_profile_session(request: Request):
-    """Initialize a temporary profile session (if missing)."""
-    if "profile" not in request.session:
-        request.session["profile"] = {}
-
 
 # ----------- Authentication & Profile Routes -----------
 

@@ -2,7 +2,6 @@ fastapi                # API framework
 uvicorn[standard]      # ASGI server
 beautifulsoup4         # HTML parsing
 requests               # HTTP client
-pymongo                # MongoDB driver
 dnspython              # for mongodb+srv URIs
 python-dotenv          # load .env
 google-generativeai    # Gemini (Vertex AI) client
@@ -11,3 +10,5 @@ pydantic               # settings & data validation
 Flask                  # to make app
 Werkzeug               # to hash user passwords
 python-multipart
+itsdangerous
+pymongo[srv]==3.11
