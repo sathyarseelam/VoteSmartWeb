@@ -10,6 +10,8 @@ from datetime import date
 from typing import List, Dict, Optional
 from policy_scraper import fetch_main_page, extract_prop_blocks, fetch_prop_details
 from gemini import simplify_description, simplify_paragraph, people_affected, personalize_proposition
+from dotenv import load_dotenv
+import os
 
 app = FastAPI()
 
@@ -23,13 +25,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Add session middleware (just like Flask's session)
-app.add_middleware(SessionMiddleware, secret_key="secretkey")
-
 # Setup MongoDB connection using PyMongo
-client = MongoClient("mongodb+srv://mbhagatw:878298347235@cluster0.rjnq2ff.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
-db = client.get_database("voteSmart")  # Use your database name here
-collection_name = db["users"]
+load_dotenv()
+client = MongoClient(os.getenv("MONGO_URL"))
+db = client.get_database("voteSmart") 
+users = db["users"]
 
 # ---------------------------
 
@@ -71,30 +71,6 @@ class UserProfile(BaseModel):
 
 # In-memory propositions cache (for scraped propositions)
 propositions_cache: List[Dict] = []
-
-# ----------- Authentication & Profile Routes -----------
-
-@app.get("/", response_class=HTMLResponse)
-def index(request: Request):
-    flashes = get_flash(request)
-    email = request.session.get("email")
-    if email:
-        content = f"Logged in as: {email}<br><a href='/logout'>Logout</a>"
-    else:
-        content = "Welcome to the LoginApp!<br><a href='/login'>Login</a> | <a href='/register'>Register</a>"
-    html_content = f"""
-    <html>
-      <head>
-        <title>Login App</title>
-      </head>
-      <body>
-        {''.join([f"<p>{msg}</p>" for msg in flashes])}
-        <p>{content}</p>
-      </body>
-    </html>
-    """
-    return HTMLResponse(content=html_content)
-
 
 @app.get("/register", response_class=HTMLResponse)
 def register_get(request: Request):
