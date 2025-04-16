@@ -141,16 +141,16 @@ def get_personalized_feed():
         "family_size": 10,
         "race_ethnicity": "Hispanic",
         "policy_preferences": {
-            "Civil Rights": "Right",
-            "Climate ": "Right",
-            "Criminal Justice": "Right",
-            "Education": "Right",
-            "Economy": "Right",
-            "Healthcare": "Right",
-            "Housing": "Right",
-            "Immigration & Global Affairs": "Right",
-            "Infrastructure": "Right",
-            "Tech & Innovation": "Right",
+            "civil_rights": "Right",
+            "climate ": "Right",
+            "criminal Justice": "Right",
+            "education": "Right",
+            "economy": "Right",
+            "healthcare": "Right",
+            "housing": "Right",
+            "immigration_global_affairs": "Right",
+            "infrastructure": "Right",
+            "tech_innovation": "Right",
         }
     }
     if not propositions_cache:
