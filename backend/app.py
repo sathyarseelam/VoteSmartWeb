@@ -7,6 +7,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
 from pydantic import BaseModel
 from typing import List, Dict, Optional
+import json
+import os
 
 # Import external modules (assume these are available in your project)
 from policy_scraper import fetch_main_page, extract_prop_blocks, fetch_prop_details
@@ -14,7 +16,6 @@ from gemini import (
     simplify_description,
     simplify_paragraph,
     people_affected,
-    personalize_proposition,
 )
 
 app = FastAPI()
@@ -302,10 +303,9 @@ class Proposition(BaseModel):
     simplified_description: Optional[str] = None
     simplified_paragraph: Optional[str] = None
     affected_people: Optional[str] = None
-    personalization_summary: Optional[str] = None
 
 
-@app.get("/scrape-propositions", response_model=List[Proposition])
+@app.get("/scrape-propositions", response_model=List[Proposition]) # main scraping function
 def get_scraped_propositions():
     try:
         soup = fetch_main_page()  # Scraper function
@@ -319,8 +319,10 @@ def get_scraped_propositions():
         raise HTTPException(status_code=500, detail=f"Error scraping propositions: {str(e)}")
 
 
-@app.get("/simplify-propositions", response_model=List[Proposition])
+@app.get("/simplify-propositions", response_model=List[Proposition]) # helps simplify the 
 def get_simplified_propositions():
+    global propositions_cache
+    propositions_cache = propositions_cache
     if not propositions_cache:
         raise HTTPException(
             status_code=404,
@@ -341,59 +343,19 @@ def get_simplified_propositions():
         prop["simplified_paragraph"] = simple_para
         prop["affected_people"] = people_aff
         simplified_props.append(prop)
+        save_propositions_to_file(simplified_props)
     return simplified_props
 
-
-@app.get("/personalized-feed", response_model=List[Proposition])
-def get_personalized_feed():
-    # Hardcoded user profile for personalization (simulate signup data)
-    user_profile = {
-        "first_name": "Alex",
-        "last_name": "Doe",
-        "date_of_birth": "1990-01-15",
-        "email": "alex@example.com",
-        "gender": "Non-Binary",
-        "county": "Los Angeles",
-        "income_bracket": "50k-75k",
-        "education_level": "Bachelor's Degree",
-        "occupation": "Software Developer",
-        "family_size": 10,
-        "race_ethnicity": "Hispanic",
-        "policy_preferences": {
-            "Climate change": "Right",
-            "Universal healthcare": "Right",
-            "Prison reform": "Right",
-            "Abortion": "Right",
-            "Education": "Right",
-            "Immigration": "Right",
-            "Military spending": "Right"
-        }
-    }
-    if not propositions_cache:
-        raise HTTPException(
-            status_code=404,
-            detail="No propositions available. Please scrape them first.",
-        )
-    personalized_props = []
-    for prop in propositions_cache:
-        details = prop.get("details", "")
-        if not details:
-            continue
-        personalization = personalize_proposition(user_profile, details)
-        # Skip propositions that are "Not aligned"
-        if "Not aligned" in personalization:
-            continue
-        prop["personalization_summary"] = personalization
-        personalized_props.append(prop)
-    return personalized_props
-
+def save_propositions_to_file(data, filename="propositions_data.json"):
+    filepath = os.path.join(os.getcwd(), filename)
+    with open(filepath, "w", encoding="utf-8") as f: 
+        json.dump(data, f, ensure_ascii=False, indent=4)
+    
 
 @app.get("/prop-api-root")
 def prop_api_root():
     return {"message": "Welcome to the Proposition API!"}
 
-
-# ----------- Main Section -----------
 
 if __name__ == "__main__":
     import uvicorn
