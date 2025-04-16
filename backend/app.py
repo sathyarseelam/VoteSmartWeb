@@ -1,7 +1,6 @@
 from fastapi import FastAPI, Request, Form, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.templating import Jinja2Templates
 from starlette.middleware.sessions import SessionMiddleware
 from werkzeug.security import generate_password_hash, check_password_hash
 from pymongo import MongoClient
@@ -100,7 +99,7 @@ def index(request: Request):
 @app.get("/register", response_class=HTMLResponse)
 def register_get(request: Request):
     flashes = get_flash(request)
-    return templates.TemplateResponse("register.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/register")
@@ -116,13 +115,13 @@ async def register_post(request: Request, email: str = Form(...), password: str 
     db.users.insert_one({"email": email, "password": hashed})
     
     # Render a confirmation page
-    return templates.TemplateResponse("register_confirmation.html", {"request": request})
+    return "success"
 
 
 @app.get("/login", response_class=HTMLResponse)
 def login_get(request: Request):
     flashes = get_flash(request)
-    return templates.TemplateResponse("login.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/login")
@@ -143,8 +142,26 @@ def logout(request: Request):
     add_flash(request, "You have been logged out.")
     return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
 
+@app.get("/getUserData", response_class=JSONResponse)
+def get_user_data(request: Request):
+    # Ensure the user is logged in
+    if "email" not in request.session:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    email = request.session["email"]
+    # Find the user in MongoDB by email
+    user = db.users.find_one({"email": email})
+    
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Try to get the first name from the user's data, or fallback to a generic name
+    first_name = user.get("first_name", "User")
+    
+    return JSONResponse(content={"userName": first_name})
 
-# ---- Profile Update Steps ----
+
+# ---- Multi-Step Profile Update Routes ----
 
 @app.get("/profile/step1", response_class=HTMLResponse)
 def profile_step1_get(request: Request):
@@ -152,8 +169,7 @@ def profile_step1_get(request: Request):
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     init_profile_session(request)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step1.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step1", response_class=HTMLResponse)
@@ -171,8 +187,7 @@ def profile_step2_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step2.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step2", response_class=HTMLResponse)
@@ -189,8 +204,7 @@ def profile_step3_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step3.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step3", response_class=HTMLResponse)
@@ -207,8 +221,7 @@ def profile_step4_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step4.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step4", response_class=HTMLResponse)
@@ -225,8 +238,7 @@ def profile_step5_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step5.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step5", response_class=HTMLResponse)
@@ -243,8 +255,7 @@ def profile_step6_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step6.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step6", response_class=HTMLResponse)
@@ -253,51 +264,166 @@ async def profile_step6_post(request: Request, income_bracket: str = Form(...)):
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     request.session["profile"]["income_bracket"] = income_bracket
+    # Redirect to new Step 7: Education Level
     return RedirectResponse(url="/profile/step7", status_code=status.HTTP_302_FOUND)
 
 
+# New Step 7: Education Level
 @app.get("/profile/step7", response_class=HTMLResponse)
 def profile_step7_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step7.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step7", response_class=HTMLResponse)
-async def profile_step7_post(request: Request, family_size: str = Form(...)):
+async def profile_step7_post(request: Request, education_level: str = Form(...)):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    request.session["profile"]["family_size"] = family_size
+    request.session["profile"]["education_level"] = education_level
     return RedirectResponse(url="/profile/step8", status_code=status.HTTP_302_FOUND)
 
 
+# New Step 8: Occupation
 @app.get("/profile/step8", response_class=HTMLResponse)
 def profile_step8_get(request: Request):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
-    flashes = get_flash(request)
-    return templates.TemplateResponse("profile_step8.html", {"request": request, "flash": flashes})
+    return "success"
 
 
 @app.post("/profile/step8", response_class=HTMLResponse)
-async def profile_step8_post(request: Request, race_ethnicity: str = Form(...)):
+async def profile_step8_post(request: Request, occupation: str = Form(...)):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    request.session["profile"]["occupation"] = occupation
+    return RedirectResponse(url="/profile/step9", status_code=status.HTTP_302_FOUND)
+
+
+# Adjusted Step 9: Family Size (previously step7)
+@app.get("/profile/step9", response_class=HTMLResponse)
+def profile_step9_get(request: Request):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    return "success"
+
+
+@app.post("/profile/step9", response_class=HTMLResponse)
+async def profile_step9_post(request: Request, family_size: str = Form(...)):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    request.session["profile"]["family_size"] = family_size
+    return RedirectResponse(url="/profile/step10", status_code=status.HTTP_302_FOUND)
+
+
+# Adjusted Step 10: Race/Ethnicity (previously step8)
+@app.get("/profile/step10", response_class=HTMLResponse)
+def profile_step10_get(request: Request):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    return "success"
+
+
+@app.post("/profile/step10", response_class=HTMLResponse)
+async def profile_step10_post(request: Request, race_ethnicity: str = Form(...)):
     if "email" not in request.session:
         add_flash(request, "You need to log in to update your profile.")
         return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
     request.session["profile"]["race_ethnicity"] = race_ethnicity
+    return RedirectResponse(url="/profile/step11", status_code=status.HTTP_302_FOUND)
 
-    # Update user document in MongoDB with profile data from session
+
+# Adjusted Step 11: Policy Preferences (previously step9)
+@app.get("/profile/step11", response_class=HTMLResponse)
+def profile_step11_get(request: Request):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    return "success"
+
+
+@app.post("/profile/step11", response_class=HTMLResponse)
+async def profile_step11_post(request: Request, policy_preferences: str = Form(...)):
+    if "email" not in request.session:
+        add_flash(request, "You need to log in to update your profile.")
+        return RedirectResponse(url="/login", status_code=status.HTTP_302_FOUND)
+    request.session["profile"]["policy_preferences"] = policy_preferences
+    # Final update: update the MongoDB user document with all collected profile data
     profile_data = request.session.get("profile", {})
     db.users.update_one({"email": request.session["email"]}, {"$set": profile_data})
-    # Clear temporary profile data
     request.session.pop("profile", None)
-
     add_flash(request, "Profile updated successfully!")
     return RedirectResponse(url="/", status_code=status.HTTP_302_FOUND)
+
+
+# ---- Updated API Endpoint for Profile Step Endpoints ----
+@app.get("/profile/endpoints", response_class=JSONResponse)
+def get_profile_endpoints():
+    endpoints = {
+        "step1": {
+            "url": "/profile/step1",
+            "method": "GET (form) / POST (expects 'first_name')",
+            "description": "Enter your first name."
+        },
+        "step2": {
+            "url": "/profile/step2",
+            "method": "GET (form) / POST (expects 'last_name')",
+            "description": "Enter your last name."
+        },
+        "step3": {
+            "url": "/profile/step3",
+            "method": "GET (form) / POST (expects 'birth_date' in YYYY-MM-DD format)",
+            "description": "Enter your birth date."
+        },
+        "step4": {
+            "url": "/profile/step4",
+            "method": "GET (form) / POST (expects 'gender')",
+            "description": "Choose your gender."
+        },
+        "step5": {
+            "url": "/profile/step5",
+            "method": "GET (form) / POST (expects 'county')",
+            "description": "Enter your county."
+        },
+        "step6": {
+            "url": "/profile/step6",
+            "method": "GET (form) / POST (expects 'income_bracket')",
+            "description": "Choose your income bracket."
+        },
+        "step7": {
+            "url": "/profile/step7",
+            "method": "GET (form) / POST (expects 'education_level')",
+            "description": "Enter your education level."
+        },
+        "step8": {
+            "url": "/profile/step8",
+            "method": "GET (form) / POST (expects 'occupation')",
+            "description": "Enter your occupation."
+        },
+        "step9": {
+            "url": "/profile/step9",
+            "method": "GET (form) / POST (expects 'family_size')",
+            "description": "Choose your family size."
+        },
+        "step10": {
+            "url": "/profile/step10",
+            "method": "GET (form) / POST (expects 'race_ethnicity')",
+            "description": "Choose your race/ethnicity."
+        },
+        "step11": {
+            "url": "/profile/step11",
+            "method": "GET (form) / POST (expects 'policy_preferences' with one of: 'Right Leaning', 'Middle', 'Left Leaning')",
+            "description": "Select your policy preferences."
+        }
+    }
+    return JSONResponse(content=endpoints)
 
 
 # ----------- Proposition API Endpoints -----------
@@ -368,13 +494,16 @@ def get_personalized_feed():
         "family_size": 10,
         "race_ethnicity": "Hispanic",
         "policy_preferences": {
-            "Climate change": "Right",
-            "Universal healthcare": "Right",
-            "Prison reform": "Right",
-            "Abortion": "Right",
+            "Civil Rights": "Right",
+            "Climate ": "Right",
+            "Criminal Justice": "Right",
             "Education": "Right",
-            "Immigration": "Right",
-            "Military spending": "Right"
+            "Economy": "Right",
+            "Healthcare": "Right",
+            "Housing": "Right",
+            "Immigration & Global Affairs": "Right",
+            "Infrastructure": "Right",
+            "Tech & Innovation": "Right",
         }
     }
     if not propositions_cache:
