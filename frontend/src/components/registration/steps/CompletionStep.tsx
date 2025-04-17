@@ -1,8 +1,25 @@
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { ArrowRight, Check } from "lucide-react";
+import { useRegistration } from "@/contexts/RegistrationContext"; // ← grab data
+import { api } from "@/api/client";                            // ← call backend
+
 
 const CompletionStep = () => {
+
+  const { data } = useRegistration();   // all answers
+  const navigate = useNavigate();
+
+  const finish = async () => {
+    const { confirmPassword,policyInterests, ...all } = data;
+    const { password, ...profile } = all;
+    // POSTs to backends `/auth/register` endpoint
+    const res = await api.post("/auth/register", { profile, password });
+    localStorage.setItem("uid", res.data.uid);   // remember me for later calls
+    navigate("/dashboard");
+  };
+
+  
   return (
     <div className="text-center border border-blue-200 rounded-3xl p-10">
       <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -18,12 +35,14 @@ const CompletionStep = () => {
         </p>
       </div>
       
-      <Link to="/dashboard">
-        <Button className="bg-blue-600 hover:bg-blue-700 px-6 py-6 mx-auto flex items-center gap-2">
-          Go to Dashboard
-          <ArrowRight size={18} />
-        </Button>
-      </Link>
+      <Button
+        onClick={finish}
+        className="bg-blue-600 hover:bg-blue-700 px-6 py-6 mx-auto flex items-center gap-2"
+      >
+        Create account & go to dashboard
+        <ArrowRight size={18} />
+      </Button>
+
     </div>
   );
 };

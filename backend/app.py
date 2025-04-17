@@ -2,21 +2,23 @@ from fastapi import FastAPI, Request, Form, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
-from werkzeug.security import generate_password_hash, check_password_hash
-from pymongo import MongoClient
-from pydantic import BaseModel, EmailStr
+from pymongo import MongoClient, IndexModel
+from pydantic import BaseModel, EmailStr, Field
 from enum import Enum
 from datetime import date
 from typing import List, Dict, Optional
 from policy_scraper import fetch_main_page, extract_prop_blocks, fetch_prop_details
 from gemini import simplify_description, simplify_paragraph, people_affected, personalize_proposition
 from dotenv import load_dotenv
-import os
+import os, uuid
+from passlib.hash import bcrypt
+from fastapi.encoders import jsonable_encoder
+
 
 app = FastAPI()
 
 # Set up CORS for your frontend
-origins = ["http://localhost:8080"]
+origins = ["http://localhost:5173"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -25,55 +27,53 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+app.add_middleware(SessionMiddleware, secret_key=os.getenv("SESSION_SECRET"))
+
+
 # Setup MongoDB connection using PyMongo
 load_dotenv()
 client = MongoClient(os.getenv("MONGO_URL"))
-db = client.get_database("voteSmart") 
-users = db["users"]
+db = client.voteSmart
+users = db.users
 
-# ---------------------------
+# make sure email is unique
+users.create_indexes([IndexModel("email", unique=True)])
+
+# ----------- Base Models ---------------- #
 
 class PolicyChoice(str, Enum):
-    left = "Left"
-    neutral = "Neutral"
-    right = "Right"
-
-class PolicyPreferences(BaseModel):
-    civil_rights: PolicyChoice
-    climate: PolicyChoice
-    criminal_justice: PolicyChoice
-    education: PolicyChoice
-    economy: PolicyChoice
-    healthcare: PolicyChoice
-    housing: PolicyChoice
-    immigration_global_affairs: PolicyChoice
-    infrastructure: PolicyChoice
-    tech_innovation: PolicyChoice
+    """Allowed stances for each policy area"""
+    Left = "Left"
+    Neutral = "Neutral"
+    Right = "Right"
 
 class UserProfile(BaseModel):
-    # required
-    first_name: str
-    last_name: str
-    date_of_birth: date
-    email: EmailStr
+    first_name: str       = Field(alias="firstName")
+    last_name: str        = Field(alias="lastName")
+    date_of_birth: str    = Field(alias="dateOfBirth")  # ISO "YYYY-MM-DD"
+    email: EmailStr       # validated email address
 
-    # everything from here is optional
-    gender: Optional[str] = None
-    county: Optional[str] = None
-    income_bracket: Optional[str] = None
-    education_level: Optional[str] = None
-    occupation: Optional[str] = None
-    family_size: Optional[int] = None
-    race_ethnicity: Optional[str] = None
+    # Truly optional fields (can be omitted or null)
+    gender: Optional[str]          = None
+    county: Optional[str]          = None
+    income_bracket: Optional[str]  = Field(None, alias="incomeBracket")
+    education_level: Optional[str] = Field(None, alias="educationLevel")
+    occupation: Optional[str]      = None
+    family_size: Optional[str]     = Field(None, alias="familySize")
+    race_ethnicity: Optional[str]  = Field(None, alias="raceEthnicity")
+    benefits: Optional[List[str]]  = None
 
-    # now your exact policy list, optional
-    policy_preferences: Optional[PolicyPreferences] = None
+    # Map of policy IDs (e.g. 'civil-rights') to stance enums
+    policy_preferences: Optional[Dict[str, PolicyChoice]] = Field(
+        None,
+        alias="policyStances",
+        description="Keys are policy IDs, values are one of 'Left', 'Neutral', 'Right'"
+    )
 
-# In-memory propositions cache (for scraped propositions)
-propositions_cache: List[Dict] = []
+class RegistrationRequest(BaseModel):
+    profile: UserProfile
+    password: str 
 
-
-# ----------- Proposition API Endpoints -----------
 
 class Proposition(BaseModel):
     number: str
@@ -84,6 +84,46 @@ class Proposition(BaseModel):
     simplified_paragraph: Optional[str] = None
     affected_people: Optional[str] = None
     personalization_summary: Optional[str] = None
+
+# In-memory propositions cache (for scraped propositions)
+propositions_cache: List[Dict] = []
+
+
+
+
+# ----------- Routes -----------
+
+
+@app.post("/auth/register")
+async def register(body: RegistrationRequest):
+    # 1. make sure email isn’t taken
+    if users.find_one({"email": body.profile.email}):
+        raise HTTPException(status_code=400, detail="email exists")
+
+    # 2. prepare document for Mongo
+    doc = body.profile.model_dump(by_alias=False)
+    doc["password_hash"] = bcrypt.hash(body.password)
+    doc["uid"] = str(uuid.uuid4())
+
+    # 3. insert
+    users.insert_one(doc)
+
+    # 4. return lightweight success payload
+    return {"uid": doc["uid"]}
+
+@app.get("/users/{uid}")
+async def get_user(uid: str):
+    # Look up the user document in MongoDB, omit the password_hash
+    doc = users.find_one({"uid": uid}, {"password_hash": 0})
+    if not doc:
+        raise HTTPException(404, "user not found")
+    # Convert MongoDB's special ObjectId to a string for JSON serialization
+    doc["_id"] = str(doc["_id"])
+    return jsonable_encoder(doc)
+
+
+
+# ----------- Proposition API Endpoints -----------
 
 
 @app.get("/scrape-propositions", response_model=List[Proposition])

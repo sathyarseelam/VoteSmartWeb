@@ -1,4 +1,3 @@
-import { useState } from "react";
 import Header from "@/components/dashboard/Header";
 import HeroSection from "@/components/dashboard/HeroSection";
 import TimelineSection from "@/components/dashboard/TimelineSection";
@@ -8,9 +7,36 @@ import FloatingChatButton from "@/components/dashboard/FloatingChatButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileText, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useState, useEffect } from "react";
+import { api } from "@/api/client"; // ← Axios helper
+
 
 const Dashboard = () => {
-  const userName = "Alex";
+  const [userName, setUserName] = useState<string | null>(null);
+  const uid = localStorage.getItem("uid");
+
+  useEffect(() => {
+    // define an async function inside the effect
+    async function fetchUser() {
+      if (!uid) return; // no uid, nothing to do
+  
+      try {
+        // pause here until the GET request completes
+        const response = await api.get(`/users/${uid}`);
+        // once we have the response, grab the name out of the JSON
+        setUserName(response.data.first_name);
+      } catch (err) {
+        // if anything goes wrong (network, 404, etc.), clear the name
+        setUserName("");
+      }
+    }
+  
+    // actually call the async function
+    fetchUser();
+  }, [uid]);
+
+  //Optionally, fetch the personalized feed in a second useEffect
+
   
   // State for popups
   const [isLegislationPopupOpen, setIsLegislationPopupOpen] = useState(false);
