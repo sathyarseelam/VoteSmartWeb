@@ -158,7 +158,7 @@ const DashboardFeedSection = ({
                     <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
                     <polyline points="16 7 22 7 22 13"></polyline>
                   </svg>
-                  <span>Johnson leading in recent polls</span>
+                  <span>Donald Trump leading in recent polls</span>
                 </div>
                 <Button variant="outline" className="w-full">
                   Compare Candidates
@@ -182,30 +182,30 @@ const Dashboard = () => {
   
   // Data for popups
   const legislationData = {
-    title: "Infrastructure Bill H.R. 3684",
-    description: "Recently passed in the House",
+    title: "Prop 35: Make permanent a tax on managed health care plans",
+    description: "This proposition makes healthcare taxes go to Medi-Cal, helping low-income Californians.  Doctors want this money to boost their pay for treating Medi-Cal patients.",
     summary:
-      "This bill authorizes funds for federal aid for highways, highway safety programs, and transit programs. It includes provisions related to climate change, addressing resiliency and environmental impacts on highway systems and ensuring infrastructure is built to withstand future challenges. The bill received bipartisan support but has faced criticism from fiscal conservatives concerned about its impact on the federal deficit. Support for this bill generally aligns with broader policy goals related to infrastructure investment and climate action. The Congressional Budget Office estimates this will add approximately $256 billion to projected deficits over the next ten years.",
+      "Proposition 35 would require California to use revenue from a tax on health care plans to fund Medi-Cal, the state’s public insurance program for low-income residents and people with disabilities. The money would support services like mental health care, emergency services, family planning, and prescription drugs, and prevent lawmakers from redirecting those funds for other purposes. Over the next four years, it’s expected to generate over $35 billion. Supporters—including doctors, hospitals, and clinics—argue it will increase payments to Medi-Cal providers and improve access to care for the more than 14 million Californians who rely on the program. Critics point out that it limits the governor’s flexibility to allocate funds elsewhere, potentially impacting other state priorities.",
     bias: "neutral" as "left" | "neutral" | "right",
   };
 
   const candidateData = {
-    title: "Sarah Johnson vs. Michael Chen",
-    description: "Senate Race Comparison",
-    summary:
-      "This closely watched Senate race features Sarah Johnson (D), the current state Attorney General, against Michael Chen (R), a successful business owner and former state representative. Johnson is campaigning on healthcare reform, climate policy, and expanding educational opportunities. Chen's platform focuses on economic growth, tax reduction, and border security. Recent polling shows Johnson maintaining a lead, though the gap has narrowed in recent weeks. The race is considered pivotal for determining Senate control.",
+    title: "Donald Trump vs. Kamala Harris",
+    description: "2024 U.S. Presidential Election",
+    summary: 
+  "This high-stakes presidential race pits former President Donald Trump (R) against Vice President Kamala Harris (D). Harris is campaigning on protecting reproductive rights, climate action, and strengthening voting access. Trump’s platform centers around economic deregulation, tough immigration policies, and America-first trade priorities. Polls show a tight race, with each candidate holding strong support in key battleground states. The outcome is expected to have a significant impact on the future direction of national policy.",
     policies: [
-      "Healthcare - Johnson supports expanding public options while Chen advocates for market-based solutions",
-      "Climate Change - Johnson backs aggressive carbon reduction targets while Chen focuses on balanced approach with economic considerations",
-      "Education - Johnson wants increased federal funding for public schools while Chen emphasizes school choice and local control",
+  "Healthcare - Harris supports expanding the Affordable Care Act and lowering prescription drug costs, while Trump backs repealing ACA provisions and promoting private healthcare competition",
+  "Climate Change - Harris advocates for major green energy investments and rejoining international climate agreements, while Trump focuses on deregulating the energy sector and supporting fossil fuel jobs",
+  "Voting Access - Harris supports expanding mail-in voting and protecting voter rights, while Trump emphasizes stricter voter ID laws and reducing mail-in ballot usage"
     ],
     candidate1: {
-      name: "Johnson",
-      percentage: 65,
+      name: "Donald Trump",
+      percentage: 55,
     },
     candidate2: {
-      name: "Chen",
-      percentage: 35,
+      name: "Kamala Harris",
+      percentage: 45,
     },
   };
 
