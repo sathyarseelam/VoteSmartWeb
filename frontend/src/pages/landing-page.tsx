@@ -1,16 +1,18 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, FileText, Users, MapPin, MessageSquare, User, Bell, CheckCircle, Sun, Moon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import Logo from "@/components/Logo";
 
 const Index = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
+  {/*}
   const toggleDarkMode = () => {
     setIsDarkMode(!isDarkMode);
   };
+  */}
 
   return (
     <div className="min-h-screen bg-white">
@@ -18,16 +20,11 @@ const Index = () => {
       <nav className="border-b border-gray-200 py-4 px-6 md:px-12">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center">
-            <div className="mr-2 bg-blue-600 rounded-lg p-1.5">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM17 13H13V17H11V13H7V11H11V7H13V11H17V13Z" fill="white"/>
-              </svg>
-            </div>
-            <h1 className="text-2xl font-bold">VoteSmart</h1>
+            <Logo />
           </div>
           <div className="flex items-center space-x-4">
-            <Link to="/" className="text-gray-700 hover:text-blue-600">Log In</Link>
-            <Button className="bg-blue-600 hover:bg-blue-700 rounded-full px-5 py-2">Sign Up</Button>
+            <Link to="login" className="text-gray-700 hover:text-blue-600">Log In</Link>
+            <Button onClick={() => {window.location.href = "/registration"}} className="bg-blue-600 hover:bg-blue-700 rounded-full px-5 py-2">Sign Up</Button>
           </div>
         </div>
       </nav>
@@ -36,9 +33,10 @@ const Index = () => {
       <section className="py-20 px-6 md:px-12">
         <div className="max-w-7xl mx-auto grid md:grid-cols-2 gap-8 items-center">
           <div>
-          <h1 className="text-5xl font-bold mb-6">
-              <span className="text-blue-500">Welcome to </span>
-              <span className="text-red-500">VoteSmart</span>
+          <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6">
+            <span className="bg-gradient-to-r from-blue-500 to-red-500 bg-clip-text text-transparent">
+              Welcome to VoteSmart
+            </span>
           </h1>
             <p className="text-gray-600 text-xl mb-8">
               Make voting easier. Get personalized updates, track legislation, and compare candidates — all in one place.
@@ -49,7 +47,7 @@ const Index = () => {
                   Create Account <ArrowRight className="ml-2" size={18} />
                 </Button>
               </Link>
-              <Button variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full py-6 px-8">
+              <Button onClick={() => {window.location.href = "/login"}} variant="outline" className="border-blue-600 text-blue-600 hover:bg-blue-50 rounded-full py-6 px-8">
                 Log In
               </Button>
             </div>

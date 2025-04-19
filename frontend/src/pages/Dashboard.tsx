@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/dashboard/Header";
 import HeroSection from "@/components/dashboard/HeroSection";
 import TimelineSection from "@/components/dashboard/TimelineSection";
@@ -8,6 +8,9 @@ import FloatingChatButton from "@/components/dashboard/FloatingChatButton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FileText, Users, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { api } from "@/api/client"; // ← Axios helper
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 // DashboardFeedSection component handles filtering and conditional rendering of cards
 const DashboardFeedSection = ({
@@ -173,8 +176,29 @@ const DashboardFeedSection = ({
 };
 
 const Dashboard = () => {
-  const userName = "Alex";
-  
+  const [userName, setUserName] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    // attach listener once
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        setUserName(null);
+        return;
+      }
+
+      try {
+        const { data } = await api.get(`/users/${user.uid}`);
+        setUserName(data.first_name ?? user.displayName ?? "Friend");
+      } catch (err) {
+        console.error("Failed to fetch user:", err);
+        setUserName("");
+      }
+    });
+
+    // detach on unmount / hot‑reload
+    return () => unsubscribe();
+  }, [auth]);   
   // State for popups
   const [isLegislationPopupOpen, setIsLegislationPopupOpen] = useState(false);
   const [isCandidatePopupOpen, setIsCandidatePopupOpen] = useState(false);
