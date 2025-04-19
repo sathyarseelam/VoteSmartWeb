@@ -30,7 +30,6 @@ const Dashboard = () => {
         setUserName("");
       }
     }
-  
     // actually call the async function
     fetchUser();
   }, [uid]);
