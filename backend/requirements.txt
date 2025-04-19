@@ -13,3 +13,4 @@ python-multipart
 itsdangerous
 pymongo[srv]==3.11
 certifi
+passlib
