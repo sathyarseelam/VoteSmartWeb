@@ -127,6 +127,7 @@ async def register(body: RegistrationRequest):
     # 4. return lightweight success payload
     return {"uid": doc["uid"]}
 
+# look here for user data
 @app.get("/users/{uid}")
 async def get_user(uid: str):
     # Look up the user document in MongoDB, omit the password_hash
