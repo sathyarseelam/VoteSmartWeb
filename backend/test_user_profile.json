@@ -1,0 +1,23 @@
+{
+    "first_name": "Jordan",
+    "last_name": "Lee",
+    "date_of_birth": "1988-03-14",
+    "email": "jordan.lee@example.com",
+    "gender": "Female",
+    "county": "San Francisco",
+    "income_bracket": "100k-150k",
+    "education_level": "Bachelor's Degree",
+    "occupation": "Software Engineer",
+    "family_size": 1,
+    "race_ethnicity": "White",
+    "policy_preferences": {
+      "Climate change": "Left",
+      "Universal healthcare": "Left",
+      "Prison reform": "Right",
+      "Abortion": "Left",
+      "Education": "Left",
+      "Immigration": "Left",
+      "Military spending": "Neutral"
+    }
+  }
+  
